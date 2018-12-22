@@ -16,3 +16,24 @@ source share/shorten-directory.bash
   result="$(__sd_substitute_tilde '/var/www/home/mantrid/projects' '/home/mantrid')"
   [ "$result" == '/var/www/home/mantrid/projects' ]
 }
+
+@test "__sd_extract_next_part finds the next part and shortens the long path" {
+  __sd_extract_next_part '~/projects/foo/bar' '/'
+
+  [ "$__sd_extract_next_part_part" == '~' ]
+  [ "$__sd_extract_next_part_long_path" == 'projects/foo/bar' ]
+}
+
+@test "__sd_extract_next_part considers the next part blank if long path starts with the separator" {
+  __sd_extract_next_part '/var/www/foo' '/'
+
+  [ "$__sd_extract_next_part_part" == '' ]
+  [ "$__sd_extract_next_part_long_path" == 'var/www/foo' ]
+}
+
+@test "__sd_extract_next_part considers the next part blank if long path is only a separator" {
+  __sd_extract_next_part '/' '/'
+
+  [ "$__sd_extract_next_part_part" == '' ]
+  [ "$__sd_extract_next_part_long_path" == '' ]
+}
