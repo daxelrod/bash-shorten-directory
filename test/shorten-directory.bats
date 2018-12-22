@@ -38,6 +38,27 @@ source share/shorten-directory.bash
   [ "$__sd_extract_next_part_long_path" == '' ]
 }
 
+@test "__sd_extract_last_part finds the last part and shortens the long path" {
+  __sd_extract_last_part '~/projects/foo/bar' '/'
+
+  [ "$__sd_extract_last_part_part" == 'bar' ]
+  [ "$__sd_extract_last_part_long_path" == '~/projects/foo' ]
+}
+
+@test "__sd_extract_last_part considers the last part blank if long path ends with the separator" {
+  __sd_extract_last_part '~/projects/foo/bar/' '/'
+
+  [ "$__sd_extract_last_part_part" == '' ]
+  [ "$__sd_extract_last_part_long_path" == '~/projects/foo/bar' ]
+}
+
+@test "__sd_extract_last_part considers the last part blank if long path is only a separator" {
+  __sd_extract_last_part '/' '/'
+
+  [ "$__sd_extract_last_part_part" == '' ]
+  [ "$__sd_extract_last_part_long_path" == '' ]
+}
+
 @test "__sd_shorten_part applies printf" {
   result="$(__sd_shorten_part 'waffle' 2 '%.*s')"
   [ "$result" == 'wa' ]
