@@ -37,3 +37,23 @@ source share/shorten-directory.bash
   [ "$__sd_extract_next_part_part" == '' ]
   [ "$__sd_extract_next_part_long_path" == '' ]
 }
+
+@test "__sd_shorten_part applies printf" {
+  result="$(__sd_shorten_part 'waffle' 2 '%.*s')"
+  [ "$result" == 'wa' ]
+}
+
+@test "__sd_shorten_part defaults to a format that shortens and suffixes with a slash" {
+  result="$(__sd_shorten_part 'waffle' 2)"
+  [ "$result" == 'wa/' ]
+}
+
+@test "__sd_shorten_part defaults to a format that doesn't lengthen parts shorter than the length" {
+  result="$(__sd_shorten_part 'waffle' 10)"
+  [ "$result" == 'waffle/' ]
+}
+
+@test "__sd_shorten_part defaults to a length of 1" {
+  result="$(__sd_shorten_part 'waffle')"
+  [ "$result" == 'w/' ]
+}

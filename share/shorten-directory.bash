@@ -36,3 +36,23 @@ __sd_extract_next_part () {
   # shellcheck disable=SC2034 # TODO use these in a calling function
   __sd_extract_next_part_long_path="${long_path#*"$separator"*}"
 }
+
+# Shorten an individual long path part.
+# By default, this will result in a single letter shortened part followed by a slash
+# Parameters:
+#   part: a long path part string, with no separators
+#   length: how long the short part should be, not including separator (optional; default "1")
+#   format: a printf format string. It's passed the length and the part. (optional; default "%.*s"/)
+#           The format is expected to add whatever trailing separator is appropriate for the shortened path.
+# Returns: (via echo)
+#   The shortened path part
+__sd_shorten_part () {
+  local part="$1"
+  local length="${2-1}"
+  local format="${3-%.*s/}"
+
+  # shellcheck disable=SC2059 # We want a printf format pattern in a variable
+  printf "$format" "$length" "$part"
+}
+
+
