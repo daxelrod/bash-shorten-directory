@@ -34,7 +34,7 @@ __sd_extract_next_part () {
   # shellcheck disable=SC2034 # TODO use these in a calling function
   __sd_extract_next_part_part="${long_path%%"$separator"*}"
   # shellcheck disable=SC2034 # TODO use these in a calling function
-  __sd_extract_next_part_long_path="${long_path#*"$separator"*}"
+  __sd_extract_next_part_long_path="${long_path#*"$separator"}"
 }
 
 # Shorten an individual long path part.
