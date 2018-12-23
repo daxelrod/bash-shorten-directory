@@ -43,9 +43,7 @@ __sd_extract_next_part () {
     new_long_path=''
   fi
 
-  # shellcheck disable=SC2034 # TODO use these in a calling function
   __sd_extract_next_part_part="$next_part"
-  # shellcheck disable=SC2034 # TODO use these in a calling function
   __sd_extract_next_part_long_path="$new_long_path"
 }
 
@@ -61,9 +59,7 @@ __sd_extract_last_part() {
   local long_path="$1"
   local separator="$2"
 
-  # shellcheck disable=SC2034 # TODO use these in a calling function
   __sd_extract_last_part_part="${long_path##*"$separator"}"
-  # shellcheck disable=SC2034 # TODO use these in a calling function
   __sd_extract_last_part_long_path="${long_path%"$separator"*}$separator"
 }
 
@@ -85,4 +81,50 @@ __sd_shorten_part () {
   printf "$format" "$length" "$part"
 }
 
+# Top-level function to shorten a directory string.
+# Parameters:
+#   total_length: maximum desired length of the shortened string. (optional: default is 1/4 of $COLUMNS)
+#   long_path: path to shorten. (optional: default "$PWD")
+#   part_length: when shortening a path part, how long to make it. (optional: default "1")
+#   part_format: printf-style string to apply to each path part when shortening it.
+#                Should include a trailing separator.
+#                Printf is passed two additional arguments: part_length and the part string itself.
+#                (optional: default '%.*s/' which turns "projects" into "p/")
+# Returns: (via echo)
+#   The shortened path
+__shorten_directory() {
+  local total_length="${1-$((COLUMNS/4))}"
+  local long_path="${2-$PWD}"
+  local part_length="${3-1}"
+  local part_format="${4-%.*s/}"
 
+  local separator='/'
+
+  # Prepare path for shortening
+  local long_path_tilde
+  long_path_tilde="$(__sd_substitute_tilde "$long_path" "$HOME")"
+
+  __sd_extract_last_part "$long_path_tilde" "$separator"
+  local basename="$__sd_extract_last_part_part"
+  local long_path_portion="$__sd_extract_last_part_long_path"
+
+  # Take parts off of the beginning of long_path_portion, shorten them, and add them to the end of short_path_portion.
+  # Stop when the resulting path will be as short or shorter than total_length.
+  # Alternatively, stop if there's nothing left to take out of long_path_portion and the resulting path still isn't short enough.
+  # In that case, we've done all we can.
+
+  # TODO handle 0 width characters
+
+  local short_path_portion=""
+  while [[ $((${#short_path_portion} + ${#long_path_portion} + ${#basename})) -gt "$total_length" && ${#long_path_portion} -gt 0 ]]; do
+    __sd_extract_next_part "$long_path_portion" "$separator"
+    local part="$__sd_extract_next_part_part"
+    long_path_portion="$__sd_extract_next_part_long_path"
+
+    local shortened_part
+    shortened_part="$(__sd_shorten_part "$part" "$part_length" "$part_format")"
+    short_path_portion+="$shortened_part"
+  done
+
+  echo "${short_path_portion}${long_path_portion}${basename}"
+}

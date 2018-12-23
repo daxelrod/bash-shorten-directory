@@ -85,3 +85,31 @@ source share/shorten-directory.bash
   result="$(__sd_shorten_part 'waffle')"
   [ "$result" == 'w/' ]
 }
+
+@test "__shorten_directory leaves the path untouched if the length is longer than the long path" {
+  result="$(__shorten_directory 100 '/var/www/home/mantrid/projects')"
+  [ "$result" == '/var/www/home/mantrid/projects' ]
+}
+
+@test "__shorten_directory shortens just the first element if necessary" {
+  expected='/v/www/home/mantrid/projects'
+  result="$(__shorten_directory "${#expected}" '/var/www/home/mantrid/projects')"
+  [ "$result" == "$expected" ]
+}
+
+@test "__shorten_directory shortens the first and second elements if necessary" {
+  expected='/v/www/home/mantrid/projects'
+  result="$(__shorten_directory "${#expected}" '/var/www/home/mantrid/projects')"
+  [ "$result" == "$expected" ]
+}
+
+@test "__shorten_directory shortens everything but the last two elements if necessary" {
+  expected='/v/w/h/mantrid/projects'
+  result="$(__shorten_directory "${#expected}" '/var/www/home/mantrid/projects')"
+  [ "$result" == "$expected" ]
+}
+
+@test "__shorten_directory shortens everything except basename when given a length shorter than the completely shortened path" {
+  result="$(__shorten_directory 1 '/var/www/home/mantrid/projects')"
+  [ "$result" == '/v/w/h/m/projects' ]
+}
