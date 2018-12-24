@@ -38,6 +38,13 @@ source share/shorten-directory.bash
   [ "$__sd_extract_next_part_long_path" == '' ]
 }
 
+@test "__sd_extract_next_part considers the rest of the long path blank if long path does not contain a separator" {
+  __sd_extract_next_part 'foobar' '/'
+
+  [ "$__sd_extract_next_part_part" == 'foobar' ]
+  [ "$__sd_extract_next_part_long_path" == '' ]
+}
+
 @test "__sd_extract_last_part finds the last part and shortens the long path" {
   __sd_extract_last_part '~/projects/foo/bar' '/'
 

@@ -21,6 +21,8 @@ __sd_substitute_tilde () {
 }
 
 # Pull out the leftmost path component from the long path.
+# If the long path does not contain the separator, consider the next part to be the whole path,
+# and the new long bath to be the empty string.
 # Parameters:
 #   long_path: the remaining unshortened path
 #   separator: string between path components
@@ -31,10 +33,20 @@ __sd_extract_next_part () {
   local long_path="$1"
   local separator="$2"
 
+  local next_part="${long_path%%"$separator"*}"
+  local new_long_path="${long_path#*"$separator"}"
+
+  if [[ "$next_part" == "$new_long_path" ]]; then
+    # This happens when the separator does not appear in long_path
+    # and the two patterns match the whole string from the start and the back
+
+    new_long_path=''
+  fi
+
   # shellcheck disable=SC2034 # TODO use these in a calling function
-  __sd_extract_next_part_part="${long_path%%"$separator"*}"
+  __sd_extract_next_part_part="$next_part"
   # shellcheck disable=SC2034 # TODO use these in a calling function
-  __sd_extract_next_part_long_path="${long_path#*"$separator"}"
+  __sd_extract_next_part_long_path="$new_long_path"
 }
 
 # Pull out the rightmost path component (basename) from the long path.
