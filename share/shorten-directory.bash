@@ -50,12 +50,13 @@ __sd_extract_next_part () {
 }
 
 # Pull out the rightmost path component (basename) from the long path.
+# The rest of the returned long path ends with the separator, because the shortened path would, too.
 # Parameters:
 #   long_path: the unshortened path
 #   separator: string between path components
 # Returns: (via global variables)
 #   __sd_extract_last_part_part: the rightmost path component
-#   __sd_extract_last_part_long_path: the rest of the long path without the component or its separator
+#   __sd_extract_last_part_long_path: the rest of the long path without the component but with its separator
 __sd_extract_last_part() {
   local long_path="$1"
   local separator="$2"
@@ -63,7 +64,7 @@ __sd_extract_last_part() {
   # shellcheck disable=SC2034 # TODO use these in a calling function
   __sd_extract_last_part_part="${long_path##*"$separator"}"
   # shellcheck disable=SC2034 # TODO use these in a calling function
-  __sd_extract_last_part_long_path="${long_path%"$separator"*}"
+  __sd_extract_last_part_long_path="${long_path%"$separator"*}$separator"
 }
 
 # Shorten an individual long path part.
