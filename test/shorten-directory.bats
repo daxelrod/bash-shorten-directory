@@ -63,7 +63,7 @@ source share/shorten-directory.bash
   __sd_extract_last_part '/' '/'
 
   [ "$__sd_extract_last_part_part" == '' ]
-  [ "$__sd_extract_last_part_long_path" == '' ]
+  [ "$__sd_extract_last_part_long_path" == '/' ]
 }
 
 @test "__sd_extract_last_part considers the new long path blank if long path has no separator" {
@@ -124,4 +124,14 @@ source share/shorten-directory.bash
 @test "__shorten_directory handles just a basename by returning the basename" {
   result="$(__shorten_directory 1 'projects')"
   [ "$result" == 'projects' ]
+}
+
+@test "__shorten_directory handles just a slash by returning the slash" {
+  result="$(__shorten_directory 1 '/')"
+  [ "$result" == '/' ]
+}
+
+@test "__shorten_directory handles just the home by returning a tilde" {
+  result="$(HOME='/home/mantrid' __shorten_directory 1 '/home/mantrid')"
+  [ "$result" == '~' ]
 }

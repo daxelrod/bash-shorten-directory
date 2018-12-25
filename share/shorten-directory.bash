@@ -63,8 +63,11 @@ __sd_extract_last_part() {
   local last_part="${long_path##*"$separator"}"
   local new_long_path="${long_path%"$separator"*}$separator"
 
-  if [[ "$last_part$separator" == "$new_long_path" ]]; then
-    # As above, this happens when separator does not appear in long_path
+  if [[ "$last_part$separator" == "$new_long_path" && "$long_path" != "$separator" ]]; then
+    # As above, this happens when separator does not appear in long_path.
+    # Not only do we need to check that the patterns have not matched the whole string,
+    # we also need to make sure that the long path isn't only a separator. Otherwise,
+    # if the path were at the root of the filesystem, we'd strip the separator.
 
     new_long_path='' # Intentionally do not add the separator since the original string did not have it
   fi
