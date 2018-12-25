@@ -59,11 +59,18 @@ source share/shorten-directory.bash
   [ "$__sd_extract_last_part_long_path" == '~/projects/foo/bar/' ]
 }
 
-@test "__sd_extract_last_part considers the last part blank if long path is only a separator" {
+@test "__sd_extract_last_part considers both parts blank if long path is only a separator" {
   __sd_extract_last_part '/' '/'
 
   [ "$__sd_extract_last_part_part" == '' ]
-  [ "$__sd_extract_last_part_long_path" == '/' ]
+  [ "$__sd_extract_last_part_long_path" == '' ]
+}
+
+@test "__sd_extract_last_part considers the new long path blank if long path has no separator" {
+  __sd_extract_last_part 'foobar' '/'
+
+  [ "$__sd_extract_last_part_part" == 'foobar' ]
+  [ "$__sd_extract_last_part_long_path" == '' ]
 }
 
 @test "__sd_shorten_part applies printf" {
@@ -112,4 +119,9 @@ source share/shorten-directory.bash
 @test "__shorten_directory shortens everything except basename when given a length shorter than the completely shortened path" {
   result="$(__shorten_directory 1 '/var/www/home/mantrid/projects')"
   [ "$result" == '/v/w/h/m/projects' ]
+}
+
+@test "__shorten_directory handles just a basename by returning the basename" {
+  result="$(__shorten_directory 1 'projects')"
+  [ "$result" == 'projects' ]
 }

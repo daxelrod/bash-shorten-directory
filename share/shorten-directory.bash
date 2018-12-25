@@ -48,7 +48,8 @@ __sd_extract_next_part () {
 }
 
 # Pull out the rightmost path component (basename) from the long path.
-# The rest of the returned long path ends with the separator, because the shortened path would, too.
+# The rest of the returned long path ends with the separator, (except when no separator appeared
+# in the original long_path) because the shortened path would, too.
 # Parameters:
 #   long_path: the unshortened path
 #   separator: string between path components
@@ -59,8 +60,17 @@ __sd_extract_last_part() {
   local long_path="$1"
   local separator="$2"
 
-  __sd_extract_last_part_part="${long_path##*"$separator"}"
-  __sd_extract_last_part_long_path="${long_path%"$separator"*}$separator"
+  local last_part="${long_path##*"$separator"}"
+  local new_long_path="${long_path%"$separator"*}$separator"
+
+  if [[ "$last_part$separator" == "$new_long_path" ]]; then
+    # As above, this happens when separator does not appear in long_path
+
+    new_long_path='' # Intentionally do not add the separator since the original string did not have it
+  fi
+
+  __sd_extract_last_part_part="$last_part"
+  __sd_extract_last_part_long_path="$new_long_path"
 }
 
 # Shorten an individual long path part.
