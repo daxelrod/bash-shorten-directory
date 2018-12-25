@@ -129,7 +129,11 @@ __shorten_directory() {
   # TODO handle 0 width characters
 
   local short_path_portion=""
-  while [[ $((${#short_path_portion} + ${#long_path_portion} + ${#basename})) -gt "$total_length" && ${#long_path_portion} -gt 0 ]]; do
+  local assembled_path # The final path that will be a candidate to return
+  while
+    assembled_path="${short_path_portion}${long_path_portion}${basename}"
+    [[ ${#assembled_path} -gt "$total_length" && ${#long_path_portion} -gt 0 ]]
+  do
     __sd_extract_next_part "$long_path_portion" "$separator"
     local part="$__sd_extract_next_part_part"
     long_path_portion="$__sd_extract_next_part_long_path"
@@ -139,5 +143,5 @@ __shorten_directory() {
     short_path_portion+="$shortened_part"
   done
 
-  echo "${short_path_portion}${long_path_portion}${basename}"
+  echo "$assembled_path"
 }
