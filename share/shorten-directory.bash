@@ -94,6 +94,37 @@ __sd_shorten_part () {
   printf "$format" "$length" "$part"
 }
 
+# Count the length of the string as readline would.
+# This means ignoring sequences beginning with "\[" and ending with "\]".
+# (Readline expects color codes and other nonprinting characters to be enclosed with those).
+# A string with no \[...\] pairs is supported, but strings that have escaped brackets nested
+# or unpaired will produce an undefined count (but will not infinitely loop).
+__sd_printable_length () {
+  local string="$1"
+
+  local length=0
+  local uncounted_string="$string"
+  while
+    local before_bracketed="${uncounted_string%%\\[*}" # before first \[
+    local after_bracketed="${uncounted_string#*\[*\\]}" # after first \]
+    [[ "$before_bracketed" != "$after_bracketed" ]] # As soon as they're equal, there are no more brackets in the string
+  do
+    (( length += ${#before_bracketed} ))
+
+    if [[ "$uncounted_string" != "$after_bracketed" ]]; then
+      uncounted_string="$after_bracketed"
+    else
+      # We've hit the potential for an infinite loop. This can happen if $string contains
+      # a "\[" with no matching "\]" after it. The best we can do is just count the
+      # remaining uncounted string as-is.
+      break
+    fi
+  done
+
+  (( length += ${#uncounted_string} ))
+  echo "$length"
+}
+
 # Top-level function to shorten a directory string.
 # Parameters:
 #   total_length: maximum desired length of the shortened string. (optional: default is 1/4 of $COLUMNS)
@@ -126,13 +157,11 @@ __shorten_directory() {
   # Alternatively, stop if there's nothing left to take out of long_path_portion and the resulting path still isn't short enough.
   # In that case, we've done all we can.
 
-  # TODO handle 0 width characters
-
   local short_path_portion=""
   local assembled_path # The final path that will be a candidate to return
   while
     assembled_path="${short_path_portion}${long_path_portion}${basename}"
-    [[ ${#assembled_path} -gt "$total_length" && ${#long_path_portion} -gt 0 ]]
+    [[ "$(__sd_printable_length "${assembled_path}")" -gt "$total_length" && ${#long_path_portion} -gt 0 ]]
   do
     __sd_extract_next_part "$long_path_portion" "$separator"
     local part="$__sd_extract_next_part_part"

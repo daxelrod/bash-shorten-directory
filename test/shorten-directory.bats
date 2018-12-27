@@ -93,6 +93,56 @@ source share/shorten-directory.bash
   [ "$result" == 'w/' ]
 }
 
+@test "__sd_printable_length correctly handles a string with one bracket pair" {
+  result="$(__sd_printable_length '1\[abc\]23')"
+  [ "$result" -eq 3 ]
+}
+
+@test "__sd_printable_length correctly handles a string with multiple bracket pairs" {
+  result="$(__sd_printable_length '1\[abc\]23\[def\]45')"
+  [ "$result" -eq 5 ]
+}
+
+@test "__sd_printable_length correctly handles a string with no bracket pairs" {
+  result="$(__sd_printable_length '1234')"
+  [ "$result" -eq 4 ]
+}
+
+@test "__sd_printable_length correctly handles a string starting with a bracket pair" {
+  result="$(__sd_printable_length '\[abc\]1234')"
+  [ "$result" -eq 4 ]
+}
+
+@test "__sd_printable_length correctly handles a string ending with a bracket pair" {
+  result="$(__sd_printable_length '1234\[abc\]')"
+  [ "$result" -eq 4 ]
+}
+
+@test "__sd_printable_length doesn't infinitely loop when the string has an unmatched opening \[ (count unspecified)" {
+  result="$(__sd_printable_length '1234\[abc\]56\[789')"
+  true
+}
+
+@test "__sd_printable_length doesn't infinitely loop when the string has an unmatched opening \] (count unspecified)" {
+  result="$(__sd_printable_length '1234\[abc\]56\]789')"
+  true
+}
+
+@test "__sd_printable_length isn't fooled by unescaped brackets outside of escaped brackets" {
+  result="$(__sd_printable_length '1\[a\][][567]9')"
+  [ "$result" -eq 9 ]
+}
+
+@test "__sd_printable_length isn't fooled by unescaped brackets inside escaped brackets" {
+  result="$(__sd_printable_length '1\[a]\]23')"
+  [ "$result" -eq 3 ]
+}
+
+@test "__sd_printable_length isn't fooled by unescaped brackets with no escaped brackets" {
+  result="$(__sd_printable_length '1[3]5')"
+  [ "$result" -eq 5 ]
+}
+
 @test "__shorten_directory leaves the path untouched if the length is longer than the long path" {
   result="$(__shorten_directory 100 '/var/www/home/mantrid/projects')"
   [ "$result" == '/var/www/home/mantrid/projects' ]
@@ -134,4 +184,12 @@ source share/shorten-directory.bash
 @test "__shorten_directory handles just the home by returning a tilde" {
   result="$(HOME='/home/mantrid' __shorten_directory 1 '/home/mantrid')"
   [ "$result" == '~' ]
+}
+
+@test "__shorten_directory handles format strings that apply color codes" {
+  before='\[\033[1;34m\]'
+  after='\[\033[0m\]'
+  # "/v/www/foo" is 10 characters
+  result="$(__shorten_directory 10 '/var/www/foo' 1 '\\[\\033[1;34m\\]%.*s/\\[\\033[0m\\]')"
+  [ "$result" == "${before}/${after}${before}v/${after}www/foo" ]
 }
