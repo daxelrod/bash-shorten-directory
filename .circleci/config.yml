@@ -1,0 +1,25 @@
+version: 2
+jobs:
+  test:
+    docker:
+      - image: 'bats/bats:v1.1.0'
+    steps:
+      - checkout
+      - run:
+          name: Tests
+          command: 'bats -r test'
+  lint:
+    docker:
+      - image: 'koalaman/shellcheck-alpine:v0.6.0'
+    steps:
+      - checkout
+      - run:
+          name: Shellcheck
+          command: 'shellcheck -s bash share/*'
+
+workflows:
+  version: 2
+  workflow:
+    jobs:
+      - lint
+      - test
