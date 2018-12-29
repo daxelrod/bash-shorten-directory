@@ -137,6 +137,8 @@ __sd_printable_length () {
 # Returns: (via echo)
 #   The shortened path
 __shorten_directory() {
+  local exit_status="$?" # Save previous exit status to restore at the end
+
   local total_length="${1-$((COLUMNS/4))}"
   local long_path="${2-$PWD}"
   local part_length="${3-1}"
@@ -173,4 +175,5 @@ __shorten_directory() {
   done
 
   echo "$assembled_path"
+  return "$exit_status" # Restore previous exit status
 }

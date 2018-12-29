@@ -193,3 +193,12 @@ source share/shorten-directory.bash
   result="$(__shorten_directory 10 '/var/www/foo' 1 '\\[\\033[1;34m\\]%.*s/\\[\\033[0m\\]')"
   [ "$result" == "${before}/${after}${before}v/${after}www/foo" ]
 }
+
+@test "__shorten_directory preserves previous exit status" {
+  false_run() {
+    (exit 12)
+    __shorten_directory
+  }
+  run false_run
+  [ "$status" -eq 12 ]
+}
